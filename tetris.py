@@ -1,3 +1,4 @@
+from turtle import width
 import pygame
 import random
  
@@ -201,7 +202,7 @@ def draw_text_middle(surface, text, size, color):
     font = pygame.font.SysFont("comicsans", size, bold = True)
     label = font.render(text, 1, color)
 
-    surface.blit(label, (top_left_x + play_width/2 - label.get_width()/2), top_left_y + play_height/2 - label.get_height()/2) 
+    surface.blit(label, (top_left_x + play_width/4 - 250, top_left_y + play_height/4)) 
    
 def draw_grid(surface, grid):
    sx = top_left_x
@@ -249,6 +250,17 @@ def draw_next_shape(shape, surface):
                 pygame.draw.rect(surface, shape.color, (sx + j*30, sy + i*30, 30, 30), 0)
  
     surface.blit(label, (sx + 10, sy - 50))
+
+def update_score(nscore):
+    with open('scores.txt', 'r') as f:
+        lines = f.readlines()
+        score = lines[0].strip()
+
+    with open('scores.txt', 'w') as f:
+        if int(score) > nscore:
+            f.write(str(score))
+        else:
+            f.write(str(nscore))
 
 def draw_window(surface, grid, score=0):
     surface.fill((0,0,0))
@@ -313,6 +325,7 @@ def main(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.display.quit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -350,27 +363,36 @@ def main(win):
             next_piece = get_shape()
             change_piece = False
             score += clear_rows(grid, locked_positions) * 10
-        
-        if check_lost(locked_positions):
-            draw_text_middle(win, "You Lost!", 80, (255,255,255))
-            pygame.display.update()
-            pygame.time.delay(1500)
-            run = False
-        
 
         draw_window(win, grid, score)
         draw_next_shape(next_piece, win)
         pygame.display.update()
-
+        
         if check_lost(locked_positions):
+            draw_text_middle(win, "You Lost!", 40, (255,255,255))
+            pygame.display.update()
+            pygame.time.delay(1500)
             run = False
-
-    pygame.display.quit()
- 
-def main_menu(win):
-    main(win)
+            update_score(score)
     
 
+
+ 
+def main_menu(win):
+    run = True
+    while run: 
+        win.fill((0,0,0))
+        draw_text_middle(win, 'Press Any Key To Play!', 60, (255, 255, 255))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            
+            if event.type == pygame.KEYDOWN:
+                main(win)
+    
+    pygame.display.quit()
+        
 
 win = pygame.display.set_mode((s_width, s_height))
 pygame.display.set_caption('Tetris')
